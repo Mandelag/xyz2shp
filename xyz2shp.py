@@ -22,12 +22,16 @@ def get_xyz_feature_statistics(path_to_xyz, feature_delimiter="\n", field_delimi
         # checks field
         infer_field = filter(lambda f: len(f.split(field_delimiter)) >= 2 , feature)
         infer_geom = filter(lambda f: len(f.split(field_delimiter)) < 2 , feature)
+        reducer.register("field_set", set(), lambda x,y: x.add(y))
 
         for field in infer_field:
             token = field.split(field_delimiter)
-            field_name = token[0].trim(" \r\n\t")
+            field_name = token[0].trim(" \r\n\t").replace()
             field_data = token[1].trim(" \r\n\t")
-            reducer.register(field_data+"")
+            reducer.register(field_data+"_min_length", 0, min_reducer)
+            reducer.register(field_data+"_max_length", 0, max_reducer)
+            reducer.feed(field_data+"_max_length", len(field_data))
+            reducer.feed(field_data+"_max_length", len(field_data))
         # check geometry's vertex number
         if first_feature:
             reducer.register("min_vertex_length", len(infer_geom), min_reducer)
@@ -40,7 +44,9 @@ def get_xyz_feature_statistics(path_to_xyz, feature_delimiter="\n", field_delimi
 
         # feature counts
         reducer.feed("counts", 1)
-    return reducer.getAll()
+    result = reducer.getAll()
+    print(result)
+    return result
 
 def get_xyz_features(path_to_xyz):
     """
