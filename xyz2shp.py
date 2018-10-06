@@ -15,7 +15,7 @@ def get_xyz_feature_statistics(path_to_xyz, feature_delimiter="\n", field_delimi
     ring = True
 
     reducer = Reducer()
-    reducer.register("vertex_length", min_max_reducer_default_seed, min_max_reducer)
+    reducer.register("vertex_length", min_max_reducer_default_seed(), min_max_reducer)
     reducer.register("counts", 0, lambda x, y: x+1)
 
     for feature in get_xyz_features(path_to_xyz):
@@ -23,12 +23,11 @@ def get_xyz_feature_statistics(path_to_xyz, feature_delimiter="\n", field_delimi
         infer_field = [i for i in filter(lambda f: len(f.split(field_delimiter)) >= 2 , feature)]
         infer_geom = [i for i in filter(lambda f: len(f.split(field_delimiter)) < 2 , feature)]
         reducer.register("field_set", set(), set_reducer)
-
         for field in infer_field:
             token = field.split(field_delimiter)
             field_name = token[0].strip(" \r\n\t").replace(" ", "_")
             field_data = token[1].strip(" \r\n\t")
-            reducer.register(field_name+"_length", min_max_reducer_default_seed, min_max_reducer)
+            reducer.register(field_name+"_length", min_max_reducer_default_seed(), min_max_reducer)
             reducer.feed(field_name+"_length", len(field_data))
             reducer.feed("field_set", field_name)
         # check geometry's vertex number
@@ -92,13 +91,13 @@ class Reducer():
         self.acc[variable_name] = reducing_logic(self.acc[variable_name], value)
     
     def get(self, variable_name):
-        print(self.acc)
         return self.acc[variable_name]
 
     def getAll(self):
         return dict(self.acc)
 
-min_max_reducer_default_seed = {"min": 20000000, "max": 0}
+min_max_reducer_default_seed = lambda: dict({"min": 20000000, "max": 0})
+
 def min_max_reducer(seed, value):
     if (value < seed["min"]): seed["min"] = value
     if (value > seed["max"]): seed["max"] = value
