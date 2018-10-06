@@ -39,8 +39,8 @@ class Xyz2Shp_Test(TestCase):
     def get_xyz_feature_statistics_test(self):
         statistics = xyz2shp.get_xyz_feature_statistics("./test_data/Pitsit_CRST.xyz")
         self.assertEquals(statistics["counts"], 3889)
-        self.assertEquals(statistics["min_vertex"], 1)
-        self.assertEquals(statistics["max_vertex"], 3021)
+        self.assertEquals(statistics["min_vertex_length"], 1)
+        self.assertEquals(statistics["max_vertex_length"], 3021)
         self.assertEquals(statistics["ring_like"], False)
         
     
