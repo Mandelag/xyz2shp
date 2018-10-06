@@ -61,12 +61,7 @@ def get_xyz_features(path_to_xyz):
                 line_buffer.append(line.strip('\n'))
 
 def main():
-    input_xyz = "test_data\\Pitsit_CRST.xyz"
-    output_shp = "test_data\\Pitsit_CRST.shp"
-    
-    feature_statistics = get_xyz_feature_statistics(input_xyz)
-    print(feature_statistics)
-    
+    pass    
     #import arcpy
     #arcpy.CreateFeatureclass_management(".", output_shp, "POLYLINE", "#", "DISABLED", "ENABLED", arcpy.SpatialReference(32753))
     
