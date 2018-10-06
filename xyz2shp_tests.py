@@ -5,27 +5,19 @@ import nose
 class Reducer_Test(TestCase):
     def reducer_test(self):
         reducer = xyz2shp.Reducer()
-        reducer.register("max", 0, xyz2shp.max_reducer)
-        reducer.register("min", 200000000, xyz2shp.min_reducer)
+        reducer.register("min_max", xyz2shp.min_max_reducer_default_seed, xyz2shp.min_max_reducer)
         for i in [1,2,3,4,5,6,7,101,9,10,11]:
-            reducer.feed("max", i)
-            reducer.feed("min", i)
-        max = reducer.get("max")
-        min = reducer.get("min")
-        self.assertEquals(max, 101)
-        self.assertEquals(min, 1)
+            reducer.feed("min_max", i)
+        min_max = reducer.get("min_max")
+        self.assertEquals(min_max, {"min": 1, "max":101})
 
     def reducer_register_called_multiple_times(self):
         reducer = xyz2shp.Reducer()
         for i in [1,2,3,4,5,6,7,101,9,10,11]:
-            reducer.register("max", 0, xyz2shp.max_reducer)
-            reducer.register("min", 200000000, xyz2shp.min_reducer)
-            reducer.feed("max", i)
-            reducer.feed("min", i)
-        max = reducer.get("max")
-        min = reducer.get("min")
-        self.assertEquals(max, 101)
-        self.assertEquals(min, 1)
+            reducer.register("minmax", {"min": 20000000, "max": 0}, reducing_logic=xyz2shp.min_max_reducer)
+            reducer.feed("min_max", i)
+        minmax = reducer.get("minmax")
+        self.assertEquals(minmax, {"min": 1, "max": 101})
     
     def simple_count(self):
         reducer = xyz2shp.Reducer()
@@ -39,8 +31,7 @@ class Xyz2Shp_Test(TestCase):
     def get_xyz_feature_statistics_test(self):
         statistics = xyz2shp.get_xyz_feature_statistics("./test_data/Pitsit_CRST.xyz")
         self.assertEquals(statistics["counts"], 3889)
-        self.assertEquals(statistics["min_vertex_length"], 1)
-        self.assertEquals(statistics["max_vertex_length"], 3021)
+        self.assertEquals(statistics["vertex_length"], {"min": 1, "max": 3021})
         self.assertEquals(statistics["ring_like"], False)
         
     
