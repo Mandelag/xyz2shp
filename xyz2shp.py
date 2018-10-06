@@ -47,7 +47,6 @@ def get_xyz_feature_statistics(path_to_xyz, feature_delimiter="\n", field_delimi
 
     result = reducer.getAll()
     result.update({"ring_like": ring})
-    print(result)
     return result
 
 def get_xyz_features(path_to_xyz):
@@ -65,14 +64,14 @@ def get_xyz_features(path_to_xyz):
                 line_buffer.append(line.strip('\n'))
 
 def main():
-    input_xyz = "Pitsit_CRST.xyz"
-    output_shp = "Pitsit_CRST.shp"
+    input_xyz = "test_data\\Pitsit_CRST.xyz"
+    output_shp = "test_data\\Pitsit_CRST.shp"
     
-    feature_count = get_xyz_feature_counts(input_xyz)
-    print(feature_count)
+    feature_statistics = get_xyz_feature_statistics(input_xyz)
+    print(feature_statistics)
     
-    import arcpy
-    arcpy.CreateFeatureclass_management(".", output_shp, "POLYLINE", "#", "DISABLED", "ENABLED", arcpy.SpatialReference(32753))
+    #import arcpy
+    #arcpy.CreateFeatureclass_management(".", output_shp, "POLYLINE", "#", "DISABLED", "ENABLED", arcpy.SpatialReference(32753))
     
     #for feature in get_xyz_features(input_xyz):
     #    print(feature)
