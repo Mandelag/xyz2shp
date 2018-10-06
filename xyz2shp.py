@@ -20,18 +20,18 @@ def get_xyz_feature_statistics(path_to_xyz, feature_delimiter="\n", field_delimi
 
     for feature in get_xyz_features(path_to_xyz):
         # checks field
-        infer_field = filter(lambda f: len(f.split(field_delimiter)) >= 2 , feature)
-        infer_geom = filter(lambda f: len(f.split(field_delimiter)) < 2 , feature)
-        reducer.register("field_set", set(), lambda x,y: x.add(y))
+        infer_field = [i for i in filter(lambda f: len(f.split(field_delimiter)) >= 2 , feature)]
+        infer_geom = [i for i in filter(lambda f: len(f.split(field_delimiter)) < 2 , feature)]
+        reducer.register("field_set", set(), set_reducer)
 
         for field in infer_field:
             token = field.split(field_delimiter)
-            field_name = token[0].trim(" \r\n\t").replace()
-            field_data = token[1].trim(" \r\n\t")
-            reducer.register(field_data+"_min_length", 0, min_reducer)
-            reducer.register(field_data+"_max_length", 0, max_reducer)
-            reducer.feed(field_data+"_max_length", len(field_data))
-            reducer.feed(field_data+"_max_length", len(field_data))
+            field_name = token[0].strip(" \r\n\t").replace(" ", "_")
+            field_data = token[1].strip(" \r\n\t")
+            reducer.register(field_name+"_min_length", 0, min_reducer)
+            reducer.register(field_name+"_max_length", 0, max_reducer)
+            reducer.feed(field_name+"_max_length", len(field_data))
+            reducer.feed(field_name+"_max_length", len(field_data))
         # check geometry's vertex number
         if first_feature:
             reducer.register("min_vertex_length", len(infer_geom), min_reducer)
@@ -44,7 +44,9 @@ def get_xyz_feature_statistics(path_to_xyz, feature_delimiter="\n", field_delimi
 
         # feature counts
         reducer.feed("counts", 1)
+
     result = reducer.getAll()
+    result.update({"ring_like": ring})
     print(result)
     return result
 
@@ -112,6 +114,10 @@ def max_reducer(seed, value):
     
 def min_reducer(seed, value):
     if (value < seed): seed = value
+    return seed
+
+def set_reducer(seed, value):
+    seed.add(value)
     return seed
 
 if __name__ == "__main__":
