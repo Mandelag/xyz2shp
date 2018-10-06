@@ -15,7 +15,7 @@ def get_xyz_feature_statistics(path_to_xyz, feature_delimiter="\n", field_delimi
     ring = True
 
     reducer = Reducer()
-    reducer.register("max_vertex_length", 0, max_reducer)
+    reducer.register("vertex_length", min_max_reducer_default_seed, min_max_reducer)
     reducer.register("counts", 0, lambda x, y: x+1)
 
     for feature in get_xyz_features(path_to_xyz):
@@ -28,15 +28,12 @@ def get_xyz_feature_statistics(path_to_xyz, feature_delimiter="\n", field_delimi
             token = field.split(field_delimiter)
             field_name = token[0].strip(" \r\n\t").replace(" ", "_")
             field_data = token[1].strip(" \r\n\t")
-            reducer.register(field_name+"_min_length", 0, min_reducer)
-            reducer.register(field_name+"_max_length", 0, max_reducer)
-            reducer.feed(field_name+"_max_length", len(field_data))
-            reducer.feed(field_name+"_max_length", len(field_data))
+            reducer.register(field_name+"_length", min_max_reducer_default_seed, min_max_reducer)
+            reducer.feed(field_name+"_length", len(field_data))
         # check geometry's vertex number
         if first_feature:
-            reducer.register("min_vertex_length", len(infer_geom), min_reducer)
-        reducer.feed("max_vertex_length", len(infer_geom))
-        reducer.feed("min_vertex_length", len(infer_geom))
+            reducer.register("vertex_length", {"min":len(infer_geom), "max": 0}, min_max_reducer)
+        reducer.feed("vertex_length", len(infer_geom))
         
         # check for ring like geometry
         if ring and len(infer_geom) >= 3:
@@ -106,13 +103,10 @@ class Reducer():
     def getAll(self):
         return dict(self.acc)
 
-    # sample reducing logic 
-def max_reducer(seed, value):
-    if (value > seed): seed = value
-    return seed
-    
-def min_reducer(seed, value):
-    if (value < seed): seed = value
+min_max_reducer_default_seed = {"min": 20000000, "max": 0}
+def min_max_reducer(seed, value):
+    if (value < seed["min"]): seed["min"] = value
+    if (value > seed["max"]): seed["max"] = value
     return seed
 
 def set_reducer(seed, value):
