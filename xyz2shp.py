@@ -30,6 +30,7 @@ def get_xyz_feature_statistics(path_to_xyz, feature_delimiter="\n", field_delimi
             field_data = token[1].strip(" \r\n\t")
             reducer.register(field_name+"_length", min_max_reducer_default_seed, min_max_reducer)
             reducer.feed(field_name+"_length", len(field_data))
+            reducer.feed("field_set", field_name)
         # check geometry's vertex number
         if first_feature:
             reducer.register("vertex_length", {"min":len(infer_geom), "max": 0}, min_max_reducer)
@@ -50,7 +51,6 @@ def get_xyz_features(path_to_xyz):
     """
         Extract XYZ data in to python list as string (text).
     """
-    xyz_features = []
     with open(path_to_xyz) as file:
         line_buffer = []
         for line in file:
