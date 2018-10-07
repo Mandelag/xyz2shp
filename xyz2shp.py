@@ -59,16 +59,40 @@ def get_xyz_features(path_to_xyz):
             else:
                 line_buffer.append(line.strip('\n'))
 
-def main():
-    pass    
-    #import arcpy
-    #arcpy.CreateFeatureclass_management(".", output_shp, "POLYLINE", "#", "DISABLED", "ENABLED", arcpy.SpatialReference(32753))
+def feature_parser(feature):
+    result = {"attributes": {}, "geometry": []}
+    infer_field = [i for i in filter(lambda f: len(f.split(field_delimiter)) >= 2 , feature)]
+    infer_geom = [i for i in filter(lambda f: len(f.split(field_delimiter)) < 2 , feature)]
+    for field in infer_field:
+        token = field.split("=")
+        field_name = token[0].strip(" \r\n\t").replace(" ", "_")
+        field_data = token[1].strip(" \r\n\t")
+        result["attributes"].update({field_name: field_data})
+    for geom in infer_geom:
+        point = map(lambda v: float(v), geom.split(","))
+        result["geometry"].append(point)
+    return result
+
+def main():    
+    import arcpy
     
-    #for feature in get_xyz_features(input_xyz):
-    #    print(feature)
+    arcpy.env.overwriteOutput = True
+
+    input_xyz = "test_data/Pitsit_CRST.xyz"
+    output_shp = "test_data/output.shp"
     
-    #import arcpy
+    arcpy.CreateFeatureclass_management(".", output_shp, "POLYLINE", "#", "DISABLED", "ENABLED", arcpy.SpatialReference(32753))
     
+    feature_statistics = get_xyz_feature_statistics(input_xyz)
+
+    for field in feature_statistics["field_set"]:
+        arcpy.AddField_management(output_shp, field[:10], "TEXT", "#", "#", feature_statistics[field+"_length"]["max"])
+
+    
+    for feature in get_xyz_features(input_xyz):
+        
+        
+        
     #with arcpy.da.InserCursor(output_shp) as cursor:
         # baca xyz_feature, buat geometri, buat fitur, save
 
