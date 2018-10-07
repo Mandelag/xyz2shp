@@ -19,25 +19,22 @@ def get_xyz_feature_statistics(path_to_xyz, feature_delimiter="\n", field_delimi
     reducer.register("counts", 0, lambda x, y: x+1)
 
     for feature in get_xyz_features(path_to_xyz):
-        # checks field
-        infer_field = [i for i in filter(lambda f: len(f.split(field_delimiter)) >= 2 , feature)]
-        infer_geom = [i for i in filter(lambda f: len(f.split(field_delimiter)) < 2 , feature)]
+        parsed_feature = feature_parser(feature)
+        attributes = parsed_feature["attributes"]
+        geometry = parsed_feature["geometry"]
         reducer.register("field_set", set(), set_reducer)
-        for field in infer_field:
-            token = field.split(field_delimiter)
-            field_name = token[0].strip(" \r\n\t").replace(" ", "_")
-            field_data = token[1].strip(" \r\n\t")
+        for field_name, field_data in attributes.items():
             reducer.register(field_name+"_length", min_max_reducer_default_seed(), min_max_reducer)
             reducer.feed(field_name+"_length", len(field_data))
             reducer.feed("field_set", field_name)
         # check geometry's vertex number
         if first_feature:
-            reducer.register("vertex_length", {"min":len(infer_geom), "max": 0}, min_max_reducer)
-        reducer.feed("vertex_length", len(infer_geom))
+            reducer.register("vertex_length", {"min":len(geometry), "max": 0}, min_max_reducer)
+        reducer.feed("vertex_length", len(geometry))
         
         # check for ring like geometry
-        if ring and len(infer_geom) >= 3:
-            if (infer_geom[0] != infer_geom[-1]): ring = False
+        if ring and len(geometry) >= 3:
+            if (geometry[0] != geometry[-1]): ring = False
 
         # feature counts
         reducer.feed("counts", 1)
