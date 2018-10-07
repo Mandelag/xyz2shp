@@ -77,17 +77,19 @@ def main():
     import os, sys
     arcpy.env.overwriteOutput = True
 
-    input_xyz = sys.path[0]+os.sep+"test_data"+os.sep+"Pitsit_CRST.xyz"
-    output_workspace = sys.path[0]+os.sep+"test_data"
-    output_shp = "output.shp"
+    inputs = parser.parse_args()
+
+    input_xyz = inputs.input_xyz
+    output_workspace = inputs.workspace
+    output_shp = inputs.output_name
     output_path = output_workspace+os.sep+output_shp
     
-    #arcpy.CreateFeatureclass_management(output_workspace, output_shp, "POLYLINE", "#", "DISABLED", "ENABLED", arcpy.SpatialReference(32753))
+    arcpy.CreateFeatureclass_management(output_workspace, output_shp, "POLYLINE", "#", "DISABLED", "ENABLED", arcpy.SpatialReference(32753))
     
     feature_statistics = get_xyz_feature_statistics(input_xyz)
 
-    #for field in feature_statistics["field_set"]:
-    #    arcpy.AddField_management(output_path, field[:10], "TEXT", "#", "#", feature_statistics[field+"_length"]["max"])
+    for field in feature_statistics["field_set"]:
+        arcpy.AddField_management(output_path, field[:10], "TEXT", "#", "#", feature_statistics[field+"_length"]["max"])
     
     fields = []
     for feature in get_xyz_features(input_xyz):
@@ -138,4 +140,9 @@ def set_reducer(seed, value):
     return seed
 
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(prog="python xyz2shp.py")
+    parser.add_argument("input_xyz", help="Input .xyz file.")
+    parser.add_argument("-w", "--workspace", default=".", help="Output workspace. It can be folder or geodatabase.")
+    parser.add_argument('output_name', help="Output feature class / shapefile name. '.shp' are required if the workspace is non-geodatabase.")
     main()
