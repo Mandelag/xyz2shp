@@ -82,18 +82,25 @@ def main():
     output_shp = "output.shp"
     output_path = output_workspace+os.sep+output_shp
     
-    arcpy.CreateFeatureclass_management(output_workspace, output_shp, "POLYLINE", "#", "DISABLED", "ENABLED", arcpy.SpatialReference(32753))
+    #arcpy.CreateFeatureclass_management(output_workspace, output_shp, "POLYLINE", "#", "DISABLED", "ENABLED", arcpy.SpatialReference(32753))
     
     feature_statistics = get_xyz_feature_statistics(input_xyz)
 
-    for field in feature_statistics["field_set"]:
-        arcpy.AddField_management(output_path, field[:10], "TEXT", "#", "#", feature_statistics[field+"_length"]["max"])
-        
-    with arcpy.da.InsertCursor(output_shp, ["*"]) as cursor:
+    #for field in feature_statistics["field_set"]:
+    #    arcpy.AddField_management(output_path, field[:10], "TEXT", "#", "#", feature_statistics[field+"_length"]["max"])
+    
+    fields = []
+    for feature in get_xyz_features(input_xyz):
+        parsed_feature = feature_parser(feature)
+        fields = [field[:10] for field in parsed_feature["field_names"]]
+        break
+
+    with arcpy.da.InsertCursor(output_path, ["SHAPE@"]+fields) as cursor:
         for feature in get_xyz_features(input_xyz):
             parsed_feature = feature_parser(feature)
-            
-            cursor.insertRow()
+            points = arcpy.Array([arcpy.Point(*p) for p in parsed_feature["geometry"]])
+            line = arcpy.Polyline(points, arcpy.SpatialReference(32753), True)
+            cursor.insertRow([line]+parsed_feature["field_data"])
 
 class Reducer():
     
