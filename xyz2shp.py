@@ -96,14 +96,17 @@ def main():
         parsed_feature = feature_parser(feature)
         fields = [field[:10] for field in parsed_feature["field_names"]]
         break
-
+    count = 0
+    total = feature_statistics["counts"]
     with arcpy.da.InsertCursor(output_path, ["SHAPE@"]+fields) as cursor:
         for feature in get_xyz_features(input_xyz):
             parsed_feature = feature_parser(feature)
             points = arcpy.Array([arcpy.Point(*p) for p in parsed_feature["geometry"]])
             line = arcpy.Polyline(points, arcpy.SpatialReference(32753), True)
             cursor.insertRow([line]+parsed_feature["field_data"])
-
+            count = count + 1
+            sys.stdout.write("\r{0:.2f}%".format(count*100/total))
+            sys.stdout.flush()
 class Reducer():
     
     def __init__(self):
