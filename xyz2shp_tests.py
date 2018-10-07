@@ -27,6 +27,21 @@ class Reducer_Test(TestCase):
             reducer.feed("counts", i)
         self.assertEquals(reducer.get("counts"), len(test_list))
 
+    def feature_parser_Test(self):
+        feature = ["name=Jakarta", "pop=12000000", "country=Indonesia", " 106.5,-6.8", "106.4,-6.86"]
+        parsed_feature = xyz2shp.feature_parser(feature)
+        self.assertEquals(parsed_feature, {
+            "attributes": {
+                "name": "Jakarta",
+                "pop": "12000000",
+                "country": "Indonesia"
+            },
+            "geometry": [
+                [106.5, -6.8],
+                [106.4, -6.86]
+            ]
+        })
+
 class With_Sample_Data_Test(TestCase):
     def sample_data_one_test(self):
         input_xyz = "test_data\\Pitsit_CRST.xyz"
