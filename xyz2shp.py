@@ -72,26 +72,26 @@ def feature_parser(feature, field_delimiter="="):
 
 def main():    
     import arcpy
-    
+    import os, sys
     arcpy.env.overwriteOutput = True
 
-    input_xyz = "test_data/Pitsit_CRST.xyz"
-    output_shp = "test_data/output.shp"
+    input_xyz = sys.path[0]+os.sep+"test_data"+os.sep+"Pitsit_CRST.xyz"
+    output_workspace = sys.path[0]+os.sep+"test_data"
+    output_shp = "output.shp"
+    output_path = output_workspace+os.sep+output_shp
     
-    arcpy.CreateFeatureclass_management(".", output_shp, "POLYLINE", "#", "DISABLED", "ENABLED", arcpy.SpatialReference(32753))
+    arcpy.CreateFeatureclass_management(output_workspace, output_shp, "POLYLINE", "#", "DISABLED", "ENABLED", arcpy.SpatialReference(32753))
     
     feature_statistics = get_xyz_feature_statistics(input_xyz)
 
     for field in feature_statistics["field_set"]:
-        arcpy.AddField_management(output_shp, field[:10], "TEXT", "#", "#", feature_statistics[field+"_length"]["max"])
-
-    
-    for feature in get_xyz_features(input_xyz):
-        pass
+        arcpy.AddField_management(output_path, field[:10], "TEXT", "#", "#", feature_statistics[field+"_length"]["max"])
         
-        
-    #with arcpy.da.InserCursor(output_shp) as cursor:
-        # baca xyz_feature, buat geometri, buat fitur, save
+    with arcpy.da.InsertCursor(output_shp, ["*"]) as cursor:
+        for feature in get_xyz_features(input_xyz):
+            parsed_feature = feature_parser(feature)
+            
+            cursor.insertRow()
 
 class Reducer():
     
