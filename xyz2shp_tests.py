@@ -31,11 +31,8 @@ class Reducer_Test(TestCase):
         feature = ["name=Jakarta", "pop=12000000", "country=Indonesia", " 106.5,-6.8", "106.4,-6.86"]
         parsed_feature = xyz2shp.feature_parser(feature)
         self.assertEquals(parsed_feature, {
-            "attributes": {
-                "name": "Jakarta",
-                "pop": "12000000",
-                "country": "Indonesia"
-            },
+            "field_names": ["name", "pop", "country"],
+            "field_data": ["Jakarta", "12000000", "Indonesia"],
             "geometry": [
                 [106.5, -6.8],
                 [106.4, -6.86]

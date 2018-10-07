@@ -20,10 +20,11 @@ def get_xyz_feature_statistics(path_to_xyz, feature_delimiter="\n", field_delimi
 
     for feature in get_xyz_features(path_to_xyz):
         parsed_feature = feature_parser(feature)
-        attributes = parsed_feature["attributes"]
+        field_names = parsed_feature["field_names"]
+        field_data = parsed_feature["field_data"]
         geometry = parsed_feature["geometry"]
         reducer.register("field_set", set(), set_reducer)
-        for field_name, field_data in attributes.items():
+        for field_name, field_data in zip(field_names, field_data):
             reducer.register(field_name+"_length", min_max_reducer_default_seed(), min_max_reducer)
             reducer.feed(field_name+"_length", len(field_data))
             reducer.feed("field_set", field_name)
@@ -57,14 +58,15 @@ def get_xyz_features(path_to_xyz):
                 line_buffer.append(line.strip('\n'))
 
 def feature_parser(feature, field_delimiter="="):
-    result = {"attributes": {}, "geometry": []}
+    result = {"field_names": [], "field_data": [], "geometry": []}
     infer_field = [i for i in filter(lambda f: len(f.split(field_delimiter)) >= 2 , feature)]
     infer_geom = [i for i in filter(lambda f: len(f.split(field_delimiter)) < 2 , feature)]
     for field in infer_field:
         token = field.split("=")
         field_name = token[0].strip(" \r\n\t").replace(" ", "_")
         field_data = token[1].strip(" \r\n\t")
-        result["attributes"].update({field_name: field_data})
+        result["field_names"].append(field_name)
+        result["field_data"].append(field_data)
     for geom in infer_geom:
         point = map(lambda v: float(v), geom.split(","))
         result["geometry"].append(point)
