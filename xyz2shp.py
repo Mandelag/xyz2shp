@@ -59,7 +59,7 @@ def get_xyz_features(path_to_xyz):
             else:
                 line_buffer.append(line.strip('\n'))
 
-def feature_parser(feature):
+def feature_parser(feature, field_delimiter="="):
     result = {"attributes": {}, "geometry": []}
     infer_field = [i for i in filter(lambda f: len(f.split(field_delimiter)) >= 2 , feature)]
     infer_geom = [i for i in filter(lambda f: len(f.split(field_delimiter)) < 2 , feature)]
@@ -90,7 +90,7 @@ def main():
 
     
     for feature in get_xyz_features(input_xyz):
-        
+        pass
         
         
     #with arcpy.da.InserCursor(output_shp) as cursor:
